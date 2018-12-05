@@ -42,16 +42,16 @@ grow = function(N_res,Fec,alpha,seedSurv,G_res,G_inv){
   
     #update resident
   	tmp1 = G_res*N_res
-  	N_res_new = seedSurv*(1-G_res)*N_res[1]+Fec*tmp1/(1+alpha*tmp1)
+  	N_res_new = seedSurv*(1-G_res)*N_res+Fec*tmp1/(1+alpha*tmp1)
   	# N_res_new = rpois(1,N_res_new)
   	
   	# get invader's growth rate
   	N_inv_init = 1
   	tmp2 = G_inv*N_inv_init
-  	N_inv_new = seedSurv*(1-G_res)*N_inv_init+Fec*tmp2/(1+alpha*tmp1)
-  	lambda_inv = log(N_inv_new/N_inv_init)
+  	N_inv_new = seedSurv*(1-G_inv)*N_inv_init+Fec*tmp2/(1+alpha*tmp1)
+  	r_inv = log(N_inv_new/N_inv_init)
   	
-  	return(c(N_res_new,lambda_inv))
+  	return(c(N_res_new,r_inv))
   }
 
 

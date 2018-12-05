@@ -7,15 +7,15 @@ source("model_functions.R")
 # test population growth models
 tot_time = 500
 N = rep(NA, tot_time)
-lambda_inv = rep(NA, tot_time)
+r_inv = rep(NA, tot_time)
 N[1] = 2   # initial population
 for(i in 2:tot_time){
   out = grow(N_res=N[i-1],Fec=50,alpha=1,seedSurv=0.9,G_res=0.5,G_inv=0.5)
   N[i] = out[1]
-  lambda_inv[i] = out[2]
+  r_inv[i] = out[2]
 }
 plot(N,type="l")
-plot(lambda_inv,type="l")
+plot(r_inv,type="l")
 
 # test generation of fecundity and germination rates
 rates = get_F_G(tot_time, c(50,0,0),c(10,0.5,0.1), 0.9)
