@@ -28,33 +28,30 @@ get_F_G = function(Nyears, mu, sigma , rho){
 
 
 # The population model. This tracks the population size
-# of a resident, and also calculates growth rate of an
-# invader at each time step
-grow = function(N_res,Fec,alpha,seedSurv,G_res,G_inv){
-  	# This is an annual plant model, so it tracks
-  	# populations as numbers of seeds
+# of a resident, and outputs the new number of seeds,
+# as well as the number of germinated plants
+grow_res = function(seeds_res,Fec,alpha,seedSurv,G_res){
+  	# This is an annual plant model, so it tracks populations as numbers of seeds
 
   	# N = population at time t
   	# Fec = fecundity
     # alpha and seedSurv are  scalars
-  	# G_res and G_inv = germination rates
-  	# output =  population at time t+1
+  	# G_res = germination rates
+  	# output =  list: seeds at time t+1, germinated plants at t+1
   
     #update resident
-  	tmp1 = G_res*N_res
-  	N_res_new = seedSurv*(1-G_res)*N_res+Fec*tmp1/(1+alpha*tmp1)
-  	# N_res_new = rpois(1,N_res_new)
+  	plants = G_res*seeds_res
+  	seeds_new = seedSurv*(1-G_res)*seeds_res+Fec*plants/(1+alpha*plants)
+  	# N_res_new = rpois(1,N_res_new)  # demographic stochasticity
   	
-  	# get invader's growth rate
-  	N_inv_init = 1
-  	tmp2 = G_inv*N_inv_init
-  	N_inv_new = seedSurv*(1-G_inv)*N_inv_init+Fec*tmp2/(1+alpha*tmp1)
-  	r_inv = log(N_inv_new/N_inv_init)
-  	
-  	return(c(N_res_new,r_inv))
+  	return(list("seeds" = seeds_new,"plants" = plants))
   }
 
 
-
+grow_inv = function(plants_res,Fec,alpha,seedSurv,G_inv){
+  	seeds_init = 1
+  	seeds_new = seedSurv*(1-G_inv)*seeds_init+(Fec*seeds_init*G_inv)/(1+alpha*plants_res)
+  	r_inv = log(seeds_new/seeds_init)
+}
 
 
