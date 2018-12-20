@@ -47,7 +47,6 @@ grow_res = function(seeds_res,Fec,alpha,seedSurv,G_res){
   	return(list("seeds" = seeds_new,"plants" = plants))
   }
 
-
 grow_inv = function(plants_res,Fec,alpha,seedSurv,G_inv){
   	seeds_init = 1
   	seeds_new = seedSurv*(1-G_inv)*seeds_init+(Fec*seeds_init*G_inv)/(1+alpha*plants_res)
