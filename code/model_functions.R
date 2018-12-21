@@ -22,6 +22,9 @@ get_F_G = function(Nyears, mu, sigma , rho){
     # inverse logit transform on germination columns
     out[,2:3] = exp(out[,2:3])/(1+exp(out[,2:3])) 
     
+    # prevent negative values in fecundity
+    out[out<0] = 0
+    
     colnames(out)=c("Fec","G1","G2")
     return(out)
 }
@@ -29,8 +32,10 @@ get_F_G = function(Nyears, mu, sigma , rho){
 
 # The population model. This tracks the population size
 # of a resident, and outputs the new number of seeds,
-# as well as the number of germinated plants
-grow_res = function(seeds_res,Fec,alpha,seedSurv,G_res){
+# as well as the number of germinated plants.
+# It also reports the population growth rate of the resident,
+# and the population growth rate of an invader with a different germination rate.
+grow_res = function(seeds_res,Fec,alpha,seedSurv,G_res,G_inv){
   	# This is an annual plant model, so it tracks populations as numbers of seeds
 
   	# N = population at time t
@@ -40,17 +45,22 @@ grow_res = function(seeds_res,Fec,alpha,seedSurv,G_res){
   	# output =  list: seeds at time t+1, germinated plants at t+1
   
     #update resident
-  	plants = G_res*seeds_res
-  	seeds_new = seedSurv*(1-G_res)*seeds_res+Fec*plants/(1+alpha*plants)
+  	seeds_new = seedSurv*(1-G_res)*seeds_res + Fec*G_res*seeds_res/(1+alpha*G_res*seeds_res)
   	# N_res_new = rpois(1,N_res_new)  # demographic stochasticity
+  	r_res = log(seeds_new/seeds_res)
   	
-  	return(list("seeds" = seeds_new,"plants" = plants))
+  	#update invader
+  	seeds_init=1
+  	seeds_inv = seedSurv*(1-G_inv)*seeds_init + Fec*G_inv*seeds_init/(1+alpha*G_res*seeds_res)
+  	r_inv = log(seeds_inv/seeds_init)
+  	
+  	return(list("seeds" = seeds_new, "r_res" = r_res, "r_inv" = r_inv))
   }
-
-grow_inv = function(plants_res,Fec,alpha,seedSurv,G_inv){
-  	seeds_init = 1
-  	seeds_new = seedSurv*(1-G_inv)*seeds_init+(Fec*seeds_init*G_inv)/(1+alpha*plants_res)
-  	r_inv = log(seeds_new/seeds_init)
-}
+# 
+# grow_inv = function(seeds_res,Fec,alpha,seedSurv,G_res,G_inv){
+#   	seeds_init = 1
+#   	seeds_new = seedSurv*(1-G_inv)*seeds_init+(Fec*seeds_init*G_inv)/(1+alpha*seeds_res*G_res)
+#     r_inv = log(seeds_new/seeds_init)
+# }
 
 

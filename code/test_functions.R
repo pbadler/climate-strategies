@@ -13,21 +13,16 @@ r_inv = rep(NA, tot_time)
 seeds_res[1] = 2   # initial population
 plants_res[1] = NA   # initial population
 for(i in 2:tot_time){
-  out = grow_res(seeds_res=seeds_res[i-1],Fec=50,alpha=1,seedSurv=0.9,G_res=0.5)
+  out = grow_res(seeds_res=seeds_res[i-1],Fec=50,alpha=1,seedSurv=0.9,G_res=0.5,G_inv=0.5)
   seeds_res[i] = out$seeds
-  plants_res[i] = out$plants
 }
 plot(seeds_res,type="l")
-plot(plants_res, type="l")
 
-# test invader function
-r_inv = grow_inv(plants_res,Fec=50,alpha=1,seedSurv=0.9,G_inv=0.5)
-r_bar = mean(r_inv[(tot_time/4):tot_time])
 
 tot_time = 10000
 
 # test generation of fecundity and germination rates
-rates = get_F_G(tot_time, mu=c(50,0,0),sigma=c(10,0.2,0.2), rho=0.9)
+rates = get_F_G(tot_time, mu=c(50,0,0),sigma=c(10,0.2,0.2), rho=0)
 plot(rates[,c(1,2)])
 plot(rates[,c(1,3)])
 plot(rates[,c(2,3)])
@@ -37,22 +32,19 @@ rates=data.frame(rates)
 burn_in = tot_time/4 + 1
 seeds_res = rep(NA, tot_time)
 plants_res = rep(NA, tot_time)
-r_inv = rep(NA, tot_time)
+r_inv = r_res = rep(NA, tot_time)
 seeds_res[1] = 2   # initial population
-plants_res[1] = NA   # initial population
 for(i in 2:tot_time){
-  out = grow_res(seeds_res=seeds_res[i-1],Fec=rates$Fec[i],alpha=1,seedSurv=0.9,G_res=rates$G1[i])
+  out = grow_res(seeds_res=seeds_res[i-1],Fec=rates$Fec[i],alpha=1,seedSurv=0.9,G_res=rates$G1[i],G_inv=rates$G2[i])
   seeds_res[i] = out$seeds
-  plants_res[i] = out$plants
+  r_res[i] = out$r_res
+  r_inv[i] = out$r_inv
 }
 plot(seeds_res,type="l")
-plot(plants_res, type="l")
 
-# test invader function
-r_inv = grow_inv(plants_res,Fec=rates$Fec[i],alpha=1,seedSurv=0.9,rates$G2[i])
-r_bar = mean(r_inv[burn_in:tot_time])
 
 # plot "precip: production" function
-plot(rates$Fec[burn_in:tot_time], plants_res[burn_in:tot_time], 
+production=seeds_res[1:(tot_time-1)]*rates$G1[2:tot_time]
+plot(rates$Fec[burn_in:(tot_time-1)], production[burn_in:(tot_time-1)], 
      xlab="Fecundity=Precip",ylab="Production=Density")
-summary(lm(plants_res[burn_in:tot_time]~rates$Fec[burn_in:tot_time]))
+summary(lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time]))
