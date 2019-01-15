@@ -47,9 +47,23 @@ slopes = numeric(length(gRes))
 for(i in 1:length(gRes)){
   slopes[i] = coef(lm(rbar_grid[,i]~delta_g))[2]
 }
-slope_of_slopes = lm(slopes~gRes)
 
-#plot(gRes,slopes)
-#abline(slope_of_slopes)
+if(sum(slopes<0)==0){
+  ESS = 1
+}else if(sum(slopes>0)==0){
+  ESS = 0
+}else{
+  # fit spline through slopes
+  ss = smooth.spline(x=gRes,y=slopes,df=5)
+  #plot(gRes,slopes)
+  #lines(predict(ss))
+  ss_fun = function(x) predict(ss, x)$y 
+  # find where slope spline crosses zero
+  tmp = uniroot(ss_fun,interval=c(min(gRes),max(gRes)))$root
+  ESS = inv.logit(tmp)
+}
 
-ESS = inv.logit(-1*(coef(slope_of_slopes)[1]/coef(slope_of_slopes)[2]))
+
+
+
+

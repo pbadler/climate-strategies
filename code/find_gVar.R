@@ -36,29 +36,27 @@ for(iR in 1:length(sigmaRes)){
 }
 
 delta_var = sigma_steps
-contour(sigmaRes,delta_var,t(rbar_grid),xlab="Resident var(g)",ylab="delta var(g)")
-image(sigmaRes,delta_var,t(rbar_grid),xlab="Resident var(g)",ylab="delta var(g)")
+#contour(sigmaRes,delta_var,t(rbar_grid),xlab="Resident var(g)",ylab="delta var(g)")
+#image(sigmaRes,delta_var,t(rbar_grid),xlab="Resident var(g)",ylab="delta var(g)")
 
-plot(delta_var,rbar_grid[,1])
-matplot(delta_var,rbar_grid,type="l")
-#abline(h=0)
+#plot(delta_var,rbar_grid[,1])
+#matplot(delta_var,rbar_grid,type="l")
 
 slopes = numeric(length(sigmaRes))
 for(i in 1:length(sigmaRes)){
   slopes[i] = coef(lm(rbar_grid[,i]~delta_var))[2]
 }
 
-# fit spline through slopes
-ss = smooth.spline(x=sigmaRes,y=slopes,df=4)
-plot(sigmaRes,slopes)
-lines(predict(ss))
-ss_fun = function(x) predict(ss, x)$y 
-
-# find root
 if(sum(slopes>0)==0){
   ESS = 0
 }else{
-  ESS = uniroot(ss_fun,interval=c(min(sigmaRes),max(sigmaRes)))$root
+  # fit spline through slopes
+  ss = smooth.spline(x=sigmaRes,y=slopes,df=4)
+  # plot(sigmaRes,slopes)
+  # lines(predict(ss))
+  ss_fun = function(x) predict(ss, x)$y 
+  # find where slope spline crosses zero
+  ESS = uniroot(ss_fun,interval=c(min(sigmaRes),4*max(sigmaRes)))$root
 }
 
 

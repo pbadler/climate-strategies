@@ -48,3 +48,9 @@ production=seeds_res[1:(tot_time-1)]*rates$G1[2:tot_time]
 plot(rates$Fec[burn_in:(tot_time-1)], production[burn_in:(tot_time-1)], 
      xlab="Fecundity=Precip",ylab="Production=Density")
 summary(lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time]))
+
+# plot shape of density dependence
+out = grow_res(seeds_res=1:200,Fec=50,alpha=1,seedSurv=0.9,G_res=1,1)
+plot(1:200,out$yield,type="l",ylim=c(0,50))
+out = grow_res(seeds_res=1:200,Fec=5,alpha=0.1,seedSurv=0.9,G_res=1,1)
+lines(1:200,out$yield,type="l")

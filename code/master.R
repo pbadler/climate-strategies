@@ -10,16 +10,16 @@ setwd("C:/Repos/climate-strategies/code")
 library(boot)
 source("model_functions.R")
 
-# set parameters for variable, unpredictable environment
-myFec=50
-myFecSigma = 30   # this makes it variable
+### set parameters for variable, unpredictable environment ---------------------------------
+myFec=5
+myFecSigma = 3   # this makes it variable
 myRho = 0       # 0 =  unpredictable, 1 = perfectly predictable
-myAlpha = 1
+myAlpha = 0.1
 mySeedSurv = 0.9
 tot_time = 5000 # length of each simulation
 burn_in = tot_time/5 + 1
 
-# find ESS g fraction given a series of g variances
+### find ESS g fraction given a series of g variances
 gVars = c(0,0.1,0.5,1,2)
 ESS_gFrac_given_gVar = rep(NA,length(gVars))
 for(iGvar in 1:length(gVars)){
@@ -29,7 +29,7 @@ for(iGvar in 1:length(gVars)){
   ESS_gFrac_given_gVar[iGvar] = ESS
 }
 
-# find ESS g var given a series of g fractions
+### find ESS g var given a series of g fractions
 gFracs = logit(seq(0.1,0.9,0.1))
 ESS_gVar_given_gFrac = rep(NA,length(gFracs))
 for(iGfrac in 1:length(gFracs)){
@@ -39,8 +39,93 @@ for(iGfrac in 1:length(gFracs)){
   ESS_gVar_given_gFrac[iGfrac] = ESS
 }
 
-# plot all partial ESS's
+### plot all partial ESS's
 plot(gVars,ESS_gFrac_given_gVar,type="o",ylim=c(0,1),pch=16,col="blue",
      xlab="Var(g)",ylab="g",main=paste("Var(F)=",myFecSigma,", rho=",myRho))
 points(ESS_gVar_given_gFrac,inv.logit(gFracs),pch=16,col="red")
 lines(ESS_gVar_given_gFrac,inv.logit(gFracs),col="red")
+
+### simulate and plot the precip - production relationship
+gFrac = 0.57 # eyeballed from previous figure
+gVar = 0.05   # eyeballed from previous figure
+# simulate rates
+rates = get_F_G(tot_time, mu=c(myFec,gFrac,gFrac),sigma=c(myFecSigma,gVar,gVar), rho=myRho)
+rates=data.frame(rates)
+#simulate resident population
+production = seeds = rep(NA, tot_time)
+seeds[1] = 2   # initial population
+for(i in 2:tot_time){
+  out = grow_res(seeds_res=seeds[i-1],Fec=rates$Fec[i],alpha=myAlpha,seedSurv=mySeedSurv,G_res=rates$G1[i],G_inv=rates$G2[i])
+  seeds[i] = out$seeds
+  production[i] = out$yield
+}
+sensitivity = lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time])
+plot(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time],xlab="Resources",ylab="Production",
+     main=paste("Var(F)=",myFecSigma,", rho=",myRho))
+abline(sensitivity, col="red")
+legend("topleft",paste("Slope=",round(coef(sensitivity)[2],2)),bty="n")
+
+print(paste("Resource mean=",round(mean(rates$Fec[burn_in:tot_time]),2)))
+print(paste("Resource SD=",round(sd(rates$Fec[burn_in:tot_time]),2)))
+print(paste("Production mean=",round(mean(production[burn_in:tot_time]),2)))
+print(paste("Production SD=",round(sd(production[burn_in:tot_time]),2)))
+
+### set parameters for variable, predictable environment ---------------------------------
+myFec=5
+myFecSigma = 3   # this makes it variable
+myRho = 0.8       # 0 =  unpredictable, 1 = perfectly predictable
+myAlpha = 0.1
+mySeedSurv = 0.9
+tot_time = 5000 # length of each simulation
+burn_in = tot_time/5 + 1
+
+### find ESS g fraction given a series of g variances
+gVars = c(0,0.1,0.5,1,2,4)
+ESS_gFrac_given_gVar = rep(NA,length(gVars))
+for(iGvar in 1:length(gVars)){
+  mySigmaG = gVars[iGvar]
+  print(paste0("Doing ",iGvar," in ",length(gVars), " g vars"))
+  source("find_gFrac.R")
+  ESS_gFrac_given_gVar[iGvar] = ESS
+}
+
+### find ESS g var given a series of g fractions
+gFracs = logit(seq(0.1,0.9,0.1))
+ESS_gVar_given_gFrac = rep(NA,length(gFracs))
+for(iGfrac in 1:length(gFracs)){
+  myGfrac = gFracs[iGfrac]
+  print(paste0("Doing ",iGfrac," in ",length(gFracs), " g vars"))
+  source("find_gVar.R")
+  ESS_gVar_given_gFrac[iGfrac] = ESS
+}
+
+### plot all partial ESS's
+plot(gVars,ESS_gFrac_given_gVar,type="o",ylim=c(0,1),pch=16,col="blue",
+     xlab="Var(g)",ylab="g",main=paste("Var(F)=",myFecSigma,", rho=",myRho))
+points(ESS_gVar_given_gFrac,inv.logit(gFracs),pch=16,col="red")
+lines(ESS_gVar_given_gFrac,inv.logit(gFracs),col="red")
+
+### simulate and plot the precip - production relationship
+gFrac = 0.75 # eyeballed from previous figure
+gVar = 2.4   # eyeballed from previous figure
+# simulate rates
+rates = get_F_G(tot_time, mu=c(myFec,gFrac,gFrac),sigma=c(myFecSigma,gVar,gVar), rho=myRho)
+rates=data.frame(rates)
+#simulate resident population
+production = seeds = rep(NA, tot_time)
+seeds[1] = 2   # initial population
+for(i in 2:tot_time){
+  out = grow_res(seeds_res=seeds[i-1],Fec=rates$Fec[i],alpha=myAlpha,seedSurv=mySeedSurv,G_res=rates$G1[i],G_inv=rates$G2[i])
+  seeds[i] = out$seeds
+  production[i] = out$yield
+}
+sensitivity = lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time])
+plot(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time],xlab="Resources",ylab="Production",
+     main=paste("Var(F)=",myFecSigma,", rho=",myRho))
+abline(sensitivity, col="red")
+legend("topleft",paste("Slope=",round(coef(sensitivity)[2],2)),bty="n")
+
+print(paste("Resource mean=",round(mean(rates$Fec[burn_in:tot_time]),2)))
+print(paste("Resource SD=",round(sd(rates$Fec[burn_in:tot_time]),2)))
+print(paste("Production mean=",round(mean(production[burn_in:tot_time]),2)))
+print(paste("Production SD=",round(sd(production[burn_in:tot_time]),2)))
