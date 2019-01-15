@@ -3,7 +3,7 @@
 # Call from master.R
 
 # loop through germination variance grid
-sigmaRes = c(0.05,0.1,0.5,1,2,4)
+sigmaRes = c(0.01,0.05,0.1,0.5,1,2,4)
 sigma_steps = c(0.5,1,2)  # factors to multiply sigmaRes
 res_grid = rbar_grid = matrix(NA,3,length(sigmaRes))
 counter=0
@@ -47,18 +47,18 @@ slopes = numeric(length(sigmaRes))
 for(i in 1:length(sigmaRes)){
   slopes[i] = coef(lm(rbar_grid[,i]~delta_var))[2]
 }
-slope_of_slopes = lm(slopes~sqrt(sigmaRes) + sigmaRes)
 
-# START HERE
-polyroot(matrix(coef(slope_of_slopes),ncol=1))
+# fit spline through slopes
+ss = smooth.spline(x=sigmaRes,y=slopes,df=4)
+plot(sigmaRes,slopes)
+lines(predict(ss))
+ss_fun = function(x) predict(ss, x)$y 
 
-plot(sqrt(sigmaRes),slopes)
-lines(sqrt(sigmaRes),predict(slope_of_slopes))
-
+# find root
 if(sum(slopes>0)==0){
-  ESS = 0  # always better to have less var(g)
+  ESS = 0
 }else{
-  ESS = -1*(coef(slope_of_slopes)[1]/coef(slope_of_slopes)[2])
+  ESS = uniroot(ss_fun,interval=c(min(sigmaRes),max(sigmaRes)))$root
 }
 
 

@@ -13,14 +13,14 @@ source("model_functions.R")
 # set parameters for variable, unpredictable environment
 myFec=50
 myFecSigma = 30   # this makes it variable
-myRho = 0.8        # 0 =  unpredictable, 1 = perfectly predictable
+myRho = 0       # 0 =  unpredictable, 1 = perfectly predictable
 myAlpha = 1
 mySeedSurv = 0.9
-tot_time = 4000 # length of each simulation
+tot_time = 5000 # length of each simulation
 burn_in = tot_time/5 + 1
 
 # find ESS g fraction given a series of g variances
-gVars = c(0,0.025,0.1,0.5,1)
+gVars = c(0,0.1,0.5,1,2)
 ESS_gFrac_given_gVar = rep(NA,length(gVars))
 for(iGvar in 1:length(gVars)){
   mySigmaG = gVars[iGvar]
