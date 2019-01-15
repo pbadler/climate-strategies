@@ -19,10 +19,10 @@ for(i in 2:tot_time){
 plot(seeds_res,type="l")
 
 
-tot_time = 10000
+tot_time = 1000
 
 # test generation of fecundity and germination rates
-rates = get_F_G(tot_time, mu=c(50,0,0),sigma=c(10,0.2,0.2), rho=0)
+rates = get_F_G(tot_time, mu=c(50,0,0),sigma=c(10,0.01,0.01), rho=0)
 plot(rates[,c(1,2)])
 plot(rates[,c(1,3)])
 plot(rates[,c(2,3)])
