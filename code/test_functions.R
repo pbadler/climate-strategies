@@ -19,7 +19,7 @@ for(i in 2:tot_time){
 plot(seeds_res,type="l")
 
 
-tot_time = 1000
+tot_time = 4000
 
 # test generation of fecundity and germination rates
 rates = get_F_G(tot_time, mu=c(50,0,0),sigma=c(10,0.01,0.01), rho=0)
@@ -42,6 +42,9 @@ for(i in 2:tot_time){
 }
 plot(seeds_res,type="l")
 
+# confirm resident growth rate = 0
+mean(r_res[(tot_time/5):tot_time])
+
 
 # plot "precip: production" function
 production=seeds_res[1:(tot_time-1)]*rates$G1[2:tot_time]
@@ -52,5 +55,5 @@ summary(lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time]))
 # plot shape of density dependence
 out = grow_res(seeds_res=1:200,Fec=50,alpha=1,seedSurv=0.9,G_res=1,1)
 plot(1:200,out$yield,type="l",ylim=c(0,50))
-out = grow_res(seeds_res=1:200,Fec=5,alpha=0.1,seedSurv=0.9,G_res=1,1)
+out = grow_res(seeds_res=1:200,Fec=2,alpha=0.04,seedSurv=0.9,G_res=1,1)
 lines(1:200,out$yield,type="l")
