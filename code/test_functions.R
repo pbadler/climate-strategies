@@ -53,7 +53,8 @@ plot(rates$Fec[burn_in:(tot_time-1)], production[burn_in:(tot_time-1)],
 summary(lm(production[burn_in:tot_time]~rates$Fec[burn_in:tot_time]))
 
 # plot shape of density dependence
-out = grow_res(seeds_res=1:200,Fec=50,alpha=1,seedSurv=0.9,G_res=1,1)
-plot(1:200,out$yield,type="l",ylim=c(0,50))
-out = grow_res(seeds_res=1:200,Fec=2,alpha=0.04,seedSurv=0.9,G_res=1,1)
-lines(1:200,out$yield,type="l")
+maxN = 300
+out = grow_res(seeds_res=1:maxN,Fec=50,alpha=1,seedSurv=0.9,G_res=1,1)
+plot(1:maxN,out$yield,type="l",ylim=c(0,50),xlab="Germinants",ylab="Total seed yield")
+out = grow_res(seeds_res=1:maxN,Fec=2,alpha=0.04,seedSurv=0.9,G_res=1,1)
+lines(1:maxN,out$yield,type="l")

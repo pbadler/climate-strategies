@@ -40,7 +40,7 @@ delta_g = seq(-2*gInv_step,2*gInv_step,gInv_step)
 #image(inv.logit(gRes),delta_g,t(rbar_grid),xlab="Resident g",ylab="delta g")
 
 #plot(delta_g,rbar_grid[,3])
-#matplot(delta_g,rbar_grid,type="l")
+# matplot(delta_g,rbar_grid,type="l")
 #abline(h=0)
 
 slopes = numeric(length(gRes))
@@ -55,12 +55,36 @@ if(sum(slopes<0)==0){
 }else{
   # fit spline through slopes
   ss = smooth.spline(x=gRes,y=slopes,df=5)
-  #plot(gRes,slopes)
-  #lines(predict(ss))
+  # plot(gRes,slopes)
+  # lines(predict(ss))
   ss_fun = function(x) predict(ss, x)$y 
   # find where slope spline crosses zero
   tmp = uniroot(ss_fun,interval=c(min(gRes),max(gRes)))$root
   ESS = inv.logit(tmp)
+  
+  # alternative approach: find where max rbar is closest to zero
+  rbar_max = apply(rbar_grid,2,FUN="max")
+  ESS2 = inv.logit(gRes[which(abs(rbar_max)==min(abs(rbar_max)))])
+  
+  # make sure rbar_max closest to zero is also where g_inv = g_res (position = 3)
+  rbar_max_position = numeric(length(rbar_max))
+  for(i in 1:length(rbar_max)) rbar_max_position[i] = which(rbar_grid[,i]==rbar_max[i])
+  ESS3 = 3 == rbar_max_position[ which(abs(rbar_max)==min(abs(rbar_max))) ]
+  
+  # plot all three together
+  old_par = par(no.readonly=TRUE)
+  par(mfrow=c(3,1),mar=c(2.5,4,0,1),oma=c(2,0,1,0))
+  plot(inv.logit(gRes),slopes)
+  lines(predict(ss))
+  abline(v=ESS,col="red")
+  plot(inv.logit(gRes),rbar_max)
+  abline(h=0,lty="dotted")
+  abline(v=ESS2,col="red")
+  plot(inv.logit(gRes),rbar_max_position)
+  abline(h=3,lty="dotted")
+  mtext("inv.logit(g_res)",side=1,outer=T)
+  par(old_par)
+  
 }
 
 
